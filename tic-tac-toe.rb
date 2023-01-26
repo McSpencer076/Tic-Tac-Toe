@@ -1,4 +1,5 @@
 module TicTacToe
+  
   class Game
     def initialize()
       @player_1_score = 0
@@ -53,15 +54,14 @@ module TicTacToe
         @round_number += 1
       end
     end
-
   end
 
-  class Board
-  end
-
-  class HumanPlayer
-  end
-
-  class ComputerPlayer
+  def game_end
+    loop do
+        playround
+        if @round_number == 10 || player_1_score == 5 || player_2_score == 5
+            break
+        end
+    end
   end
 end
