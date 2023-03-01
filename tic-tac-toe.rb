@@ -1,22 +1,22 @@
-module TicTacToe
-  
-  class Game
-    def initialize()
-      @player_1_score = 0
-      @player_2_score = 0
-      @round_number = 0
-      @current_player = 1
-      @board = Array.new(10)
-      @player_1_marks = []
-      @player_2_marks = []
+module Testtactoe
+  class Gameround
+    WINNING_LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9], #horizontal line
+                     [1, 4, 7], [2, 5, 8], [3, 6, 9], #vertical line
+                     [1, 5, 9], [3, 5, 7]] #diagonal line
+
+    def full_game
+      while @round_number < @max_rounds
+        play_round
+      end
     end
 
-    def winning_lines
-      horizontal_lines = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
-      vertical_lines = [[1, 4, 7], [2, 5, 8], [3, 6, 9]]
-      diagonal_lines = [[1, 5, 9], [3, 5, 7]]
-
-      @winning_lines = [vertical_lines, horizontal_lines, diagonal_lines]
+    def initialize
+      @board = Array.new(9, " ")
+      @player_1_marks = []
+      @player_2_marks = []
+      @current_player = 1
+      @round_number = 1
+      @max_rounds = 9
     end
 
     def switch_player
@@ -24,44 +24,78 @@ module TicTacToe
     end
 
     def linecheck
-      current_player_marks = (@current_player == 1) ? @player_1_marks : @player_2_marks
-      @winning_lines.each do |line|
-        if (line - current_player_marks).empty?
-          return true
-        end
+      if WINNING_LINES.any? { |lines| (lines - @player_1_marks) == [] }
+        puts "Player 1 Has Won This round"
+        @player_1_score += 1
+        return true
+      elsif WINNING_LINES.any? { |lines| (lines - @player_2_marks) == [] }
+        puts "Player 2 Has Won This round"
+        @player_2_score += 1
+        return true
       end
-      return false
     end
 
-    def playround
-      player_mark = (@current_player == 1) ? "X" : "O"
+    def play_round
+      @player_1_score = 0
+      @player_2_score = 0
+      @winner_determined = false
+
+      while !@winner_determined
+        playingboard = Testtactoe::Playingboard.new
+        puts playingboard.print_board(@board)
+        place_mark
+        if linecheck
+          puts playingboard.print_board(@board)
+          @board = Array.new(9, " ")
+          @player_1_marks = []
+          @player_2_marks = []
+          @current_player = 1
+          @winner_determined = true
+          @round_number += 1
+        end
+      end
+    end
+
+    def place_mark
+      @player_mark = (@current_player == 1) ? "X" : "O"
+      @current_player_mark = (@current_player == 1) ? @player_1_marks : @player_2_marks
       loop do
         select_place_to_mark = rand(1..9)
-        if @board[select_place_to_mark].nil?
-          @board[select_place_to_mark] = player_mark
-          current_player_marks = (@current_player == 1) ? @player_1_marks : @player_2_marks
-          current_player_marks << select_place_to_mark
+        if @board[select_place_to_mark - 1] == " "
+          @board[select_place_to_mark - 1] = @player_mark
+          @current_player_mark << select_place_to_mark
+          switch_player
           break
         end
       end
-      if linecheck
-        @current_player == 1 ? @player_1_score += 1 : @player_2_score += 1
-        puts "#{@current_player} has won this round."
-        puts "Player 1: #{@player_1_score}, Player 2: #{@player_2_score}, Round: #{@round_number}"
-        @round_number += 1
-      else
-        switch_player
-        @round_number += 1
-      end
     end
   end
 
-  def game_end
-    loop do
-        playround
-        if @round_number == 10 || player_1_score == 5 || player_2_score == 5
-            break
+  def endgame
+    if @player_1_score == 5
+      puts "Player 1 is the winner!"
+    elsif @player_2_score == 5
+      puts "Player 2 is the winner!"
+    end
+  end
+
+  class Playingboard
+    def print_board(board)
+      i = 0
+      while (i < 3)
+        j = 0
+        while (j < 3)
+          print "|" if (j < 3 && j != 0)
+          print board[i * 3 + j] || " "
+          j += 1
         end
+        puts ""
+        puts "-+-+-" if (i < 2)
+        i += 1
+      end
     end
   end
 end
+
+gameround = Testtactoe::Gameround.new
+gameround.full_game
